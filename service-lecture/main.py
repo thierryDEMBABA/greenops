@@ -6,6 +6,7 @@ import datetime
 from typing import List
 from pydantic import BaseModel
 
+
 # test ci
 print("Service Lecture démarré avec succès - V1.2 - 2024-06-01")
 

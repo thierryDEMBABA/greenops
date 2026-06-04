@@ -6,6 +6,7 @@ import datetime
 from pydantic import BaseModel
 from typing import List
 
+
 # Connexion à la base PostgreSQL commune
 DATABASE_URL = "postgresql://greenops_user:greenops_password@postgres:5432/greenops_db"
 engine = create_engine(DATABASE_URL)

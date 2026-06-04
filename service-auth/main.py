@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import jwt
 from passlib.context import CryptContext
 
+
 # Configuration de la sécurité
 SECRET_KEY = "SUPER_SECRET_KEY_GREENOPS_PLATFORM" # À changer en production
 ALGORITHM = "HS256"

@@ -4,6 +4,7 @@ from prometheus_client import generate_latest, Gauge, REGISTRY
 import random
 import time
 
+
 app = FastAPI(title="GreenOps Energy Simulator")
 
 # 1. Déclaration des métriques Prometheus (Gauges = valeurs qui montent et descendent)

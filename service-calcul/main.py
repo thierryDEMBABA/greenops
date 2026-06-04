@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import requests
 import datetime
 
+
 # Configuration des URLs des autres composants du cluster
 PROMETHEUS_URL = "http://prometheus:9090/api/v1/query"
 AUTH_SERVICE_URL = "http://service-auth:8082/verify"
