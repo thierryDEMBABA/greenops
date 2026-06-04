@@ -7,7 +7,7 @@ from typing import List
 from pydantic import BaseModel
 
 # test ci
-print("Service Lecture démarré avec succès - V1.1")
+print("Service Lecture démarré avec succès - V1.2 - 2024-06-01")
 
 # Connexion à la base de données PostgreSQL (partagée avec le service calcul)
 DATABASE_URL = "postgresql://greenops_user:greenops_password@postgres:5432/greenops_db"
