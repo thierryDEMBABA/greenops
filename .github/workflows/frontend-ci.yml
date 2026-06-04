@@ -23,7 +23,7 @@ jobs:
       - name: Installer les dépendances et compiler (Vérification de syntaxe)
         run: |
           cd frontend
-          npm install
+          npm install --legacy-peer-deps
           npm run build
 
       - name: Connexion sécurisée au Docker Hub
