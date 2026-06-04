@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Conforme à votre schéma : Prometheus cible Scaphandre pour récupérer l'énergie
+  - job_name: 'scaphandre'
+    static_configs:
+      - targets: ['scaphandre:8080']
+
+  - job_name: 'greenops-simulator'
+    static_configs:
+      - targets: ['greenops_simulator:8000'] # Utilise le container_name et le port interne du conteneur
