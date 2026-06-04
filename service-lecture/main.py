@@ -6,6 +6,9 @@ import datetime
 from typing import List
 from pydantic import BaseModel
 
+# test ci
+print("Service Lecture démarré avec succès - V1.1")
+
 # Connexion à la base de données PostgreSQL (partagée avec le service calcul)
 DATABASE_URL = "postgresql://greenops_user:greenops_password@postgres:5432/greenops_db"
 engine = create_engine(DATABASE_URL)
