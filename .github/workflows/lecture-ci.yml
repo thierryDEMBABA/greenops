@@ -1,0 +1,49 @@
+name: CI - Service lecture
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'service-lecture/**' # Déclenchement granulaire
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code du dépôt
+        uses: actions/checkout@v4
+
+      - name: Configurer Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: service-lecture/requirements.txt
+
+      - name: Installer les dépendances et valider la syntaxe
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+          if [ -f service-lecture/requirements.txt ]; then pip install -r service-lecture/requirements.txt; fi
+          flake8 service-lecture --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Connexion sécurisée au Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Configurer Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build et Push de l'image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./service-lecture
+          file: ./service-lecture/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/greenops_service_lecture:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/greenops_service_lecture:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
