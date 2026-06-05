@@ -50,7 +50,7 @@ def get_db():
 
 # --- ROUTES METIER ---
 
-@app.post("/api/auth/register", status_code=status.HTTP_201_CREATED)
+@app.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     email = body.get("username")
@@ -67,7 +67,7 @@ async def register(request: Request, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Utilisateur créé avec succès"}
 
-@app.post("/api/auth/login")
+@app.post("/login")
 async def login(request: Request, db: Session = Depends(get_db)):
     body = await request.json()
     email = body.get("username")
@@ -89,7 +89,7 @@ async def login(request: Request, db: Session = Depends(get_db)):
     
     return {"access_token": token, "token_type": "bearer"}
 
-@app.get("/api/auth/verify")
+@app.get("/verify")
 def verify_token(token: str):
     # Route interne permettant aux autres microservices de vérifier un JWT
     try:

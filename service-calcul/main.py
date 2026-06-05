@@ -56,7 +56,7 @@ def verify_user_token(authorization: str = Header(...)):
 
 # --- ROUTE MÉTIER DE CALCUL ---
 
-@app.post("/api/calcul/trigger-calculation", status_code=status.HTTP_201_CREATED)
+@app.post("/trigger-calculation", status_code=status.HTTP_201_CREATED)
 def calculate_and_store_green_metrics(
     db: Session = Depends(get_db), 
     user_info: dict = Depends(verify_user_token)

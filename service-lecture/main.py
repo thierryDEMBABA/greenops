@@ -48,7 +48,7 @@ def get_db():
 
 # --- ROUTES MÉTIER DE LECTURE ---
 
-@app.get("/api/donnees/latest", response_model=CarbonMetricResponse)
+@app.get("/latest", response_model=CarbonMetricResponse)
 def get_latest_metric(db: Session = Depends(get_db)):
     """
     Récupère la toute dernière mesure enregistrée. 
@@ -60,7 +60,7 @@ def get_latest_metric(db: Session = Depends(get_db)):
         return CarbonMetricsDB(id=0, timestamp=datetime.datetime.utcnow(), container_name="dev_env", power_watts=0.0, carbon_gco2=0.0)
     return latest_record
 
-@app.get("/api/donnees/history", response_model=List[CarbonMetricResponse])
+@app.get("/history", response_model=List[CarbonMetricResponse])
 def get_metrics_history(limit: int = 100, db: Session = Depends(get_db)):
     """
     Récupère l'historique des données énergétiques et carbone.
