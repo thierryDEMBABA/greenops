@@ -196,7 +196,7 @@ export default {
       try {
         this.message = "";
         const payload = { username: this.email, password: this.password };
-        await axios.post(`${API_BASE}/auth/register`, JSON.stringify(payload));
+        await axios.post(`http://localhost:8082/api/auth/register`, JSON.stringify(payload));
         this.message = "Compte créé avec succès. Veuillez vous connecter.";
       } catch (err) { 
         this.message = "Échec de l'enregistrement. Vérifiez les logs du service."; 
@@ -206,7 +206,7 @@ export default {
       try {
         this.message = "";
         const payload = { username: this.email, password: this.password };
-        const res = await axios.post(`${API_BASE}/auth/login`, JSON.stringify(payload));
+        const res = await axios.post(`http://localhost:8082/api/auth/login`, JSON.stringify(payload));
         this.token = res.data.access_token;
         localStorage.setItem('token', this.token);
         this.message = "Authentification réussie.";
@@ -223,7 +223,7 @@ export default {
     },
     async triggerCalculation() {
       try {
-        const res = await axios.post(`${API_BASE}/calcul/trigger-calculation`, {}, {
+        const res = await axios.post(`http://localhost:8083/api/calcul/trigger-calculation`, {}, {
           headers: { Authorization: `Bearer ${this.token}` }
         });
         console.log("Calcul déclenché avec succès :", res.data);
@@ -235,10 +235,10 @@ export default {
     },
     async fetchData() {
       try {
-        const latestRes = await axios.get(`${API_BASE}/donnees/latest`);
+        const latestRes = await axios.get(`http://localhost:8084/api/donnees/latest`);
         this.latestMetric = latestRes.data;
 
-        const historyRes = await axios.get(`${API_BASE}/donnees/history?limit=10`);
+        const historyRes = await axios.get(`http://localhost:8084/api/donnees/history?limit=10`);
         const history = historyRes.data.reverse();
         console.log("Données historiques reçues :", history);
 
@@ -278,7 +278,7 @@ export default {
     },
     async saveAlertConfig() {
       try {
-        await axios.post(`${API_BASE}/alertes/configure`, { user_id: 1, max_power_threshold_watts: this.alertThreshold });
+        await axios.post(`http://localhost:8085/api/alertes/configure`, { user_id: 1, max_power_threshold_watts: this.alertThreshold });
         alert("Seuil global persisté avec succès.");
       } catch (err) { 
         console.error("Erreur lors de l'enregistrement du seuil."); 
@@ -286,7 +286,7 @@ export default {
     },
     async fetchAlerts() {
       try {
-        const res = await axios.get(`${API_BASE}/alertes/user/1`);
+        const res = await axios.get(`http://localhost:8085/api/alertes/user/1`);
         this.alerts = res.data;
       } catch (err) { 
         console.error("Impossible de récupérer l'historique des alertes."); 
@@ -294,7 +294,7 @@ export default {
     },
     async acknowledgeAlert(id) {
       try {
-        await axios.put(`${API_BASE}/alertes/ack/${id}`);
+        await axios.put(`http://localhost:8085/api/alertes/ack/${id}`);
         this.fetchAlerts();
       } catch (err) { 
         console.error(err); 
