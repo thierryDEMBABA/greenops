@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import datetime
 from typing import List
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # test ci
@@ -26,6 +27,15 @@ class CarbonMetricsDB(Base):
     carbon_gco2 = Column(Float, nullable=False)
 
 app = FastAPI(title="GreenOps Data Schema Reader Service")
+
+# Configuration du Middleware CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # Autorise votre Frontend Vue.js
+    allow_credentials=True,
+    allow_methods=["*"],  # Autorise POST, GET, OPTIONS, PUT, DELETE
+    allow_headers=["*"],  # Autorise tous les headers (y compris Authorization pour le JWT)
+)
 
 # Modèle Pydantic pour structurer le JSON propre renvoyé au Frontend Vue.js
 class CarbonMetricResponse(BaseModel):

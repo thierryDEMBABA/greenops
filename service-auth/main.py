@@ -6,6 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import jwt
 from passlib.context import CryptContext
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # Configuration de la sécurité
@@ -30,6 +31,15 @@ class UserDB(Base):
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="GreenOps Auth Service")
+
+# Configuration du Middleware CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # Autorise votre Frontend Vue.js
+    allow_credentials=True,
+    allow_methods=["*"],  # Autorise POST, GET, OPTIONS, PUT, DELETE
+    allow_headers=["*"],  # Autorise tous les headers (y compris Authorization pour le JWT)
+)
 
 # Modèles Pydantic pour la validation des données entrantes (Requêtes HTTP)
 class UserCreate(BaseModel):

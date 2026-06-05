@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import requests
 import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # Configuration des URLs des autres composants du cluster
@@ -30,6 +31,15 @@ class CarbonMetricsDB(Base):
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="GreenOps Power & Carbon Calculation Service")
+
+# Configuration du Middleware CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # Autorise votre Frontend Vue.js
+    allow_credentials=True,
+    allow_methods=["*"],  # Autorise POST, GET, OPTIONS, PUT, DELETE
+    allow_headers=["*"],  # Autorise tous les headers (y compris Authorization pour le JWT)
+)
 
 # Dépendance pour obtenir la session de base de données
 def get_db():
