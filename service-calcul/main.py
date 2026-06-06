@@ -6,16 +6,24 @@ from sqlalchemy.orm import sessionmaker, Session
 import requests
 import datetime
 from fastapi.middleware.cors import CORSMiddleware
+import os
+
+# Récupération dynamique des variables d'environnement injectées par Kubernetes
+DB_HOST = os.getenv("DATABASE_HOST", "postgres")
+DB_PORT = os.getenv("DATABASE_PORT", "5432")
+DB_USER = os.getenv("DATABASE_USER", "greenops_user")
+DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "greenops_password")
+DB_NAME = os.getenv("DATABASE_NAME", "greenops_db")
 
 
 # Configuration des URLs des autres composants du cluster
 # PROMETHEUS_URL = "http://prometheus:9090/api/v1/query"
-PROMETHEUS_URL = "http://greenops.test/prometheus/api/v1/query"
+PROMETHEUS_URL = "http://http://prometheus-stack-server.greenops.svc.cluster.local:80/prometheus/api/v1/query"
 AUTH_SERVICE_URL = "http://service-auth:8082/verify"
 
 
 # Connexion à la base de données PostgreSQL
-DATABASE_URL = "postgresql://greenops_user:greenops_password@postgres:5432/greenops_db"
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
