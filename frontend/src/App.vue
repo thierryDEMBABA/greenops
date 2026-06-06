@@ -63,6 +63,8 @@
               Déclencher un Calcul
             </button>
             <button @click="fetchData" class="btn-secondary">Rafraîchir les Métriques</button>
+            <a href="http://greenops.test/prometheus" target="_blank" class="href btn-secondary">Voir les métriques Prometheus</a>
+            <a href="http://greenops.test/grafana" target="_blank" class="href btn-secondary">Voir les métriques Grafana</a>
           </div>
 
           <div class="kpi-grid">
@@ -101,8 +103,11 @@
           <div class="threshold-config bg-dark">
             <label>Seuil d'alerte critique actuel (Watts) :</label>
             <div class="input-inline">
-              <input type="number" v-model="alertThreshold" />
+              <input type="number" v-model="alertThreshold" disabled/>
               <button @click="saveAlertConfig" class="btn-primary">Appliquer le Seuil</button>
+            </div>
+            <div class="">
+              <a href="http://greenops.test/prometheus/alerts" target="_blank" class="href">Gestion des alertes Prometheus</a>
             </div>
           </div>
 
