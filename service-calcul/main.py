@@ -18,7 +18,7 @@ DB_NAME = os.getenv("DATABASE_NAME", "greenops_db")
 
 # Configuration des URLs des autres composants du cluster
 # PROMETHEUS_URL = "http://prometheus:9090/api/v1/query"
-PROMETHEUS_URL = "http://http://prometheus-stack-server.greenops.svc.cluster.local:80/prometheus/api/v1/query"
+PROMETHEUS_URL = "http://http://prometheus-stack-server.greenops.svc.cluster.local/prometheus/api/v1/query"
 AUTH_SERVICE_URL = "http://auth-service:8082/verify"
 
 
