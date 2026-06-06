@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import jwt
 from passlib.context import CryptContext
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 # Configuration de la sécurité
@@ -57,6 +58,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+@app.on_event("startup")
+async def startup_event():
+    Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 # --- ROUTES METIER ---
 
