@@ -231,7 +231,7 @@ export default {
         this.fetchData();
         this.fetchAlerts();
       } catch (err) { 
-        alert("Action refusée : Session JWT expirée ou indisponibilité de Prometheus."); 
+        console.log("Action refusée : Session JWT expirée ou indisponibilité de Prometheus."); 
       }
     },
     async fetchData() {

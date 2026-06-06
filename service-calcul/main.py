@@ -9,8 +9,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 # Configuration des URLs des autres composants du cluster
-PROMETHEUS_URL = "http://prometheus:9090/api/v1/query"
+# PROMETHEUS_URL = "http://prometheus:9090/api/v1/query"
+PROMETHEUS_URL = "http://greenops.test/prometheus/api/v1/query"
 AUTH_SERVICE_URL = "http://service-auth:8082/verify"
+
 
 # Connexion à la base de données PostgreSQL
 DATABASE_URL = "postgresql://greenops_user:greenops_password@postgres:5432/greenops_db"
