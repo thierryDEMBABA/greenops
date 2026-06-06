@@ -33,6 +33,10 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="GreenOps Auth Service")
 
+# @app.on_event("startup")
+# async def startup_event():
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
+
 # Configuration du Middleware CORS
 app.add_middleware(
     CORSMiddleware,
@@ -60,6 +64,11 @@ def get_db():
         db.close()
 
 # --- ROUTES METIER ---
+
+# app.include_router(auth_router)
+@app.get("/")
+def read_root():
+    return {"message": "Auth Service"}
 
 @app.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(request: Request, db: Session = Depends(get_db)):
@@ -115,8 +124,3 @@ if __name__ == "__main__":
     import uvicorn
     # Le port 8082 correspond exactement à ce qu'attend Nginx (voir nginx.conf)
     uvicorn.run(app, host="0.0.0.0", port=8082)
-
-
-# @app.on_event("startup")
-# async def startup_event():
-Instrumentator().instrument(app).expose(app, endpoint="/metrics")
