@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+  namespace: greenops
+spec:
+  replicas: 1 # On commence avec 1 instance (le HPA s'occupera d'augmenter ce nombre plus tard)
+  selector:
+    matchLabels:
+      app: service-auth
+  template:
+    metadata:
+      labels:
+        app: service-auth
+      annotations:
+        prometheus.io/scrape: "true" # Indique à Prometheus de scraper ce pod
+        prometheus.io/path: "/api/v1/auth/metrics" # Endpoint exposé par FastAPI pour les métriques
+        prometheus.io/port: "8082" # Port exposé par FastAPI pour les métriques
+    spec:
+      containers:
+        - name: service-auth
+          image: dmbth/greenops_auth:latest # Votre image Docker Hub
+          imagePullPolicy: Always # Force K8s à récupérer la version fraîche du Docker Hub
+          ports:
+            - containerPort: 8082
+          env:
+            # Injection des variables non sensibles depuis la ConfigMap
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: DB_HOST
+            - name: DB_HOST # Ajout de cette variante
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: DB_HOST
+            - name: POSTGRES_HOST # Ajout de cette variante
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: DB_HOST
+            - name: DATABASE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: DB_PORT
+            - name: DATABASE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: DB_NAME
+            - name: DATABASE_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: greenops-config
+                  key: DB_USER
+            # Injection du mot de passe de la BDD depuis le Secret
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenops-secrets
+                  key: POSTGRES_PASSWORD
+            # Injection de la clé de chiffrement JWT depuis le Secret
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: greenops-secrets
+                  key: JWT_SECRET_KEY
+          
+          # CONTRAINTE DE RÉSILIENCE : Les Probes
+          livenessProbe:
+            httpGet:
+              path: /docs # FastAPI génère cette page par défaut
+              port: 8082
+            initialDelaySeconds: 15 # Attend 15 secondes que FastAPI démarre
+            periodSeconds: 10 # Vérifie toutes les 10 secondes
+          readinessProbe:
+            httpGet:
+              path: /docs
+              port: 8082
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service # Nom DNS interne utilisé par les autres services
+  namespace: greenops
+spec:
+  ports:
+    - port: 8082
+      targetPort: 8082
+  selector:
+    app: service-auth

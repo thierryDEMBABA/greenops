@@ -1,0 +1,8 @@
+prometheus:
+  prometheusSpec:
+    # Injection des arguments pour le sous-chemin /prometheus
+    extraArgs:
+      - name: web.external-url
+        value: "http://greenops.test/prometheus/"
+      - name: web.route-prefix
+        value: "/"

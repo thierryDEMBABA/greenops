@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenops-config
+  namespace: greenops
+data:
+  # Configuration de la base de données (commune aux microservices)
+  DB_HOST: "postgres" # Doit correspondre au nom du Service exposant Postgres
+  DB_PORT: "5432"
+  DB_NAME: "greenops_db"
+  DB_USER: "greenops_user"
+  DB_PASSWORD: "greenops_password"
+
+  # Configuration Redis pour le cache/alertes
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  
+  # URLs des microservices internes (pour la communication inter-services)
+  SERVICE_AUTH_URL: "http://service-auth:8000"
+  SERVICE_LECTURE_URL: "http://service-lecture:8000"
+  SERVICE_CALCUL_URL: "http://service-calcul:8000"
+  GESTION_ALERTE_URL: "http://gestion-alerte:8000"
+  SIMULATOR_URL: "http://service-simulator:8000"
+  # Configuration de Prometheus (si besoin d'indiquer des targets spécifiques)
+  PROMETHEUS_TARGETS: "service-auth:8000,service-lecture:8000,service-calcul:8000,gestion-alerte:8000,service-simulator:8000"
+  # Autres configurations globales (ex: niveaux de log, paramètres d'alerte, etc.)
+  LOG_LEVEL: "INFO"
+  ALERT_THRESHOLD: "80" # Exemple de seuil d'alerte pour la consommation CPU
+
+  # RabbitMQ Configuration
+  RABBITMQ_USER: "greenuser"
+  RABBITMQ_PASSWORD: adminadmin
+  RABBITMQ_HOST: "rabbitmq"
+  RABBITMQ_PORT: "5672"
+  GREENOPS_RABBITMQ_PORT: "5672" # Port pour la communication interne avec RabbitMQ
+  GREENOPS_RABBITMQ_HOST: "rabbitmq" # Doit correspondre au nom du Service exposant RabbitMQ
+  RABBITMQ_DEFAULT_PASS: adminadmin # base64 pour "adminadmin"
+  RABBITMQ_DEFAULT_USER: "greenuser"

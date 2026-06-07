@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus # Le nom exact cherché par votre code FastAPI
+  namespace: greenops
+spec:
+  ports:
+    - port: 9090       # Le port attendu dans PROMETHEUS_URL
+      targetPort: 9090 # Redirige vers le port interne de Prometheus
+  selector:
+    app.kubernetes.io/name: prometheus

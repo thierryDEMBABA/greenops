@@ -1,0 +1,134 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenops-frontend-ingress
+  namespace: greenops
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: greenops.test
+      http:
+        paths:
+          # Tout le trafic racine va au front brut, sans aucune réécriture d'URL
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend-service
+                port:
+                  number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenops-api-ingress
+  namespace: greenops
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # La réécriture s'applique STRICTEMENT ET UNIQUEMENT sur ces routes d'API
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS, DELETE"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: greenops.test
+      http:
+        paths:
+          # 1. AUTHENTIFICATION
+          - path: /api/auth(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 8082
+
+          # 2. LECTURE DE DONNÉES (Aligné sur /api/donnees pour votre Vue.js)
+          - path: /api/donnees(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: lecture-service
+                port:
+                  number: 8084
+          
+          # 3. CALCUL
+          - path: /api/calcul(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: calcul-service
+                port:
+                  number: 8083
+          
+          # 4. ALERTES
+          - path: /api/alertes(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: alertes-service
+                port:
+                  number: 8085
+          # 5. SIMULATEUR
+          - path: /api/simulateur(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: simulator-service
+                port:
+                  number: 8089
+          
+---
+
+# 3. NOUVEAU BLOC DÉDIÉ A PROMETHEUS (Pas de rewrite-target !)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenops-prometheus-ingress
+  namespace: greenops
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: greenops.test
+      http:
+        paths:
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-stack-server
+                port:
+                  number: 9090 # <-- Utilisation du port direct 9090
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenops-grafana-ingress
+  namespace: greenops
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: greenops.test
+      http:
+        paths:
+          - path: /grafana
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 80

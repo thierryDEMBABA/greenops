@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenops-custom-alerts
+  namespace: greenops
+  labels:
+    release: prometheus-stack-server # Crucial : doit correspondre au label de ton déploiement Helm
+spec:
+  groups:
+  - name: GreenOpsAlerts
+    rules:
+    
+    # 🚨 Alerte 1 : Consommation électrique anormalement élevée
+    - alert: HighPowerConsumption
+      expr: sum(avg_over_time(greenops_simulated_core_power_watts[5m])) > 80
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Consommation électrique élevée détectée sur le cluster"
+        description: "La puissance totale consommée dépasse 80 Watts depuis plus de 2 minutes (Actuellement {{ $value }}W)."
+
+    # 🚨 Alerte 2 : Ton service d'authentification ou de calcul est DOWN
+    - alert: ServiceDown
+      expr: up{namespace="greenops"} == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Un microservice GreenOps est injoignable"
+        description: "Le pod {{ $labels.pod }} dans le namespace {{ $labels.namespace }} ne répond plus au scraper Prometheus."

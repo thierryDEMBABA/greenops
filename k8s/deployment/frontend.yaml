@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: greenops
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-frontend
+  template:
+    metadata:
+      labels:
+        app: service-frontend
+      annotations:
+        prometheus.io/scrape: "true" # Indique à Prometheus de scraper ce pod
+        prometheus.io/path: "/metrics" # Endpoint exposé par Nginx pour les métriques
+        prometheus.io/port: "80" # Port exposé par Nginx pour les métriques
+    spec:
+      containers:
+        - name: service-frontend
+          image: dmbth/greenops_frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80 # Le port standard HTTP sur lequel tourne Vue.js / Nginx
+          
+          # Sondes légères adaptées au serveur web du front
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: greenops
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: service-frontend
