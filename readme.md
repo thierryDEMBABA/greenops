@@ -13,6 +13,8 @@ Le projet est découpé en plusieurs microservices spécialisés qui communiquen
 * **Alertes** (`service-alertes`) : Système de notification et de gestion des alertes de pannes ou d'anomalies.
 * **Simulateur & Load Generator** (`service-simulator` / `load-generator`) : Générateurs de trafic et de charge pour simuler une activité utilisateur continue et tester la résilience de l'infrastructure. des outils comme keppler ou scaphandre pourront etre utilises pour un environnement concret
 
+![Mon Architecture](assets/Diagramme%20archi.png)
+
 ### 🗄️ Infrastructure et Base de données
 * **Message Broker** : RabbitMQ pour la communication asynchrone et événementielle entre les services.
 * **Bases de données** : PostgreSQL (persistance des données) et Redis (cache de performance).
@@ -54,7 +56,16 @@ kubectl apply -f ./k8s/persistance/ -n greenops
 kubectl apply -f ./k8s/deployment/ -n greenops
 kubectl apply -f ./k8s/logging/ -n greenops
 
-
+<p align="center">
+  <img src="assets/Capture d&apos;écran 2026-06-07 195254.png" alt="home" width="60%">
+   <br>
+  <img src="assets/Capture d&apos;écran 2026-06-07 195432.png" alt="Grafana" width="60%">
+</p>
+<p align="center">
+  <img src="assets/Capture d&apos;écran 2026-06-07 195332.png" alt="Alerts" width="60%">
+  <br>
+  <img src="assets/Capture d&apos;écran 2026-06-07 195501.png" alt="Alerts-prometheus" width="60%">
+</p>
 
 Auteur
 -  Nkenfack Thierry
