@@ -81,12 +81,16 @@ class ConnectionManager:
 
     async def broadcast(self, message: dict):
         """Envoie le message JSON à TOUS les frontends connectés"""
-        for connection in self.active_connections:
+        if not self.active_connections:
+            return
+        # On itère sur une copie de la liste pour éviter les conflits si un client se déconnecte pendant l'envoi
+        for connection in list(self.active_connections):
             try:
                 await connection.send_json(message)
-            except Exception:
-                # Sécurité si un client a coupé sa connexion brutalement
-                pass
+            except Exception as e:
+                print(f"[WebSocket Alert] Impossible d'envoyer à un client, nettoyage en cours... Error: {e}")
+                if connection in self.active_connections:
+                    self.active_connections.remove(connection)
 
 manager = ConnectionManager()
 
@@ -98,7 +102,8 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             # On maintient la connexion ouverte en attendant d'éventuels messages du client
             # (Même si ici le flux est principalement Descendant : Backend -> Frontend)
-            data = await websocket.receive_text()
+            await asyncio.sleep(1)
+            # data = await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 

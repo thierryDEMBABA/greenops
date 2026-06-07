@@ -225,6 +225,8 @@ export default {
             carbon_gco2: metric.carbon
           };
 
+          console.log("Nouvelles données reçues en temps réel :", metric);
+
           // 2. Formatage de l'heure système reçue
           const timeLabel = new Date(metric.timestamp).toLocaleTimeString('fr-FR');
 
