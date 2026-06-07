@@ -134,7 +134,7 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    global rabbitmq_connection, consumer_task
+    # global rabbitmq_connection, consumer_task
     if consumer_task:
         consumer_task.cancel()
     if rabbitmq_connection:
