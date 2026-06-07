@@ -18,7 +18,7 @@ DB_PASSWORD = os.getenv("DATABASE_PASSWORD", "greenops_password")
 DB_NAME = os.getenv("DATABASE_NAME", "greenops_db")
 
 RABBITMQ_USER = os.getenv("RABBITMQ_DEFAULT_USER", "greenuser")
-RABBITMQ_PASS = os.getenv("RABBITMQ_DEFAULT_PASS", "greenpassword")
+RABBITMQ_PASS = os.getenv("RABBITMQ_DEFAULT_PASS", "adminadmin")
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
 RABBITMQ_PORT = os.getenv("RABBITMQ_PORT", "5672")
 
