@@ -16,6 +16,7 @@ Le projet est découpé en plusieurs microservices spécialisés qui communiquen
 ### 🗄️ Infrastructure et Base de données
 * **Message Broker** : RabbitMQ pour la communication asynchrone et événementielle entre les services.
 * **Bases de données** : PostgreSQL (persistance des données) et Redis (cache de performance).
+* **Websockets**: optimisation de la communication inter service et reduction importante des requetes synchrones
 
 ---
 
