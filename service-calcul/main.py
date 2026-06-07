@@ -3,13 +3,14 @@ import json
 import asyncio
 import datetime
 import requests
-from fastapi import FastAPI, HTTPException, Header, Depends, status
+from fastapi import FastAPI, HTTPException, Header, Depends, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import aio_pika
+from typing import List
 
 # --- CONFIGURATION ENVIRONNEMENT ---
 DB_HOST = os.getenv("DATABASE_HOST", "postgres")
@@ -62,6 +63,47 @@ rabbitmq_connection = None
 rabbitmq_channel = None
 consumer_task = None
 
+####################3 Inclusion des websockets pour le push en temps réel vers le frontend ##########################
+
+# 1. Gestionnaire pour stocker les connexions WebSocket actives
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        print(f"[WebSocket] Nouveau client connecté. Total: {len(self.active_connections)}")
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+        print(f"[WebSocket] Client déconnecté. Total: {len(self.active_connections)}")
+
+    async def broadcast(self, message: dict):
+        """Envoie le message JSON à TOUS les frontends connectés"""
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except Exception:
+                # Sécurité si un client a coupé sa connexion brutalement
+                pass
+
+manager = ConnectionManager()
+
+# 2. La route WebSocket que ton Frontend Vue.js va ouvrir
+@app.websocket("/ws/live-metrics")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            # On maintient la connexion ouverte en attendant d'éventuels messages du client
+            # (Même si ici le flux est principalement Descendant : Backend -> Frontend)
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+#####################################################################################################################
+
 def verify_user_token(authorization: str = Header(...)):
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Format d'en-tête d'authentification invalide.")
@@ -75,7 +117,7 @@ def verify_user_token(authorization: str = Header(...)):
     except requests.RequestException:
         raise HTTPException(status_code=503, detail="Le service d'authentification est indisponible.")
 
-# --- 📥 WORKER ASYNCHRONE : ENREGISTREMENT AUTOMATIQUE (RABBITMQ -> POSTGRES) ---
+################ --- 📥 WORKER ASYNCHRONE : ENREGISTREMENT AUTOMATIQUE (RABBITMQ -> POSTGRES) --- ##########
 
 async def process_incoming_metric(message: aio_pika.IncomingMessage):
     """
@@ -105,6 +147,15 @@ async def process_incoming_metric(message: aio_pika.IncomingMessage):
                 print(f"[RabbitMQ] Enregistré : {service_name} -> {power_watts}W ({carbon_gco2} gCO2)")
             finally:
                 db.close()
+            # 2. [NOUVEAU] Diffusion instantanée en WebSocket vers Vue.js
+            live_payload = {
+                "service": service_name,
+                "watts": round(power_watts, 2),
+                "carbon": round(carbon_gco2, 4),
+                "timestamp": datetime.datetime.utcnow().isoformat()
+            }
+            # .broadcast est asynchrone, on utilise await
+            await manager.broadcast(live_payload)
                 
         except Exception as e:
             print(f"[RabbitMQ Error] Impossible de traiter le message : {str(e)}")
@@ -140,6 +191,8 @@ async def shutdown_event():
     if rabbitmq_connection:
         await rabbitmq_connection.close()
         print("[System] Connexions RabbitMQ fermées proprement.")
+
+####################################################################################################################
 
 # --- 🚀 ROUTE HTTP SYNCHRONE : REQUÊTE INSTANTANÉE (SANS ÉCRITURE SQL) ---
 

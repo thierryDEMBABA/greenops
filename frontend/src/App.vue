@@ -135,6 +135,7 @@ import axios from 'axios';
 
 // const API_BASE = "http://localhost:8000/api";
 const API_BASE = "http://greenops.test/api";
+const WS_BASE = `ws://greenops.test/api/calcul/ws/live-metrics`;
 
 
 export default {
@@ -189,15 +190,79 @@ export default {
     if (this.token) this.fetchAlerts();
     
     // Bonus : rafraîchissement en arrière-plan toutes les 15 secondes pour suivre le rythme du simulateur/Prometheus
-    this.refreshInterval = setInterval(() => {
-      this.triggerCalculation(); // Déclenche un nouveau calcul pour obtenir des données fraîches
-      this.fetchData();
-    }, 15000);
+    // this.refreshInterval = setInterval(() => {
+    //   this.triggerCalculation(); // Déclenche un nouveau calcul pour obtenir des données fraîches
+    //   this.fetchData();
+    // }, 15000);
+    // Initialisation automatique du flux temps réel
+    this.initWebSocket();
   },
   beforeDestroy() {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
+    // Fermeture propre du socket si le composant est détruit
+    if (this.ws) {
+      this.ws.close();
+    }
   },
   methods: {
+    initWebSocket() {
+      console.log("Tentative de connexion au flux Live WebSocket...");
+      this.ws = new WebSocket(WS_BASE);
+
+      this.ws.onopen = () => {
+        this.wsStatus = 'connected';
+        console.log("Connecté avec succès au Live Stream WebSocket GreenOps ⚡");
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const metric = JSON.parse(event.data);
+          
+          // 1. Mise à jour instantanée des données d'affichage KPI
+          this.latestMetric = {
+            service: metric.service,
+            power_watts: metric.watts,
+            carbon_gco2: metric.carbon
+          };
+
+          // 2. Formatage de l'heure système reçue
+          const timeLabel = new Date(metric.timestamp).toLocaleTimeString('fr-FR');
+
+          // 3. Injection dynamique de la nouvelle valeur dans les graphiques ApexCharts
+          const updatedCategories = [...this.chartOptions.xaxis.categories, timeLabel];
+          const updatedPuissance = [...this.chartSeries[0].data, metric.watts];
+          const updatedCarbone = [...this.chartSeries[1].data, metric.carbon];
+
+          // Limitation du graphique aux 15 dernières entrées pour éviter de surcharger la vue
+          if (updatedCategories.length > 15) {
+            updatedCategories.shift();
+            updatedPuissance.shift();
+            updatedCarbone.shift();
+          }
+
+          // Remplacement réactif des options de l'axe X et des données séries
+          this.chartOptions = {
+            ...this.chartOptions,
+            xaxis: { ...this.chartOptions.xaxis, categories: updatedCategories }
+          };
+          
+          this.chartSeries = [
+            { name: "Puissance Réelle (Watts)", data: updatedPuissance },
+            { name: "Estimation Carbone (gCO2)", data: updatedCarbone }
+          ];
+
+        } catch (err) {
+          console.error("Erreur d'analyse du message WebSocket entrant :", err);
+        }
+      };
+
+      this.ws.onclose = () => {
+        this.wsStatus = 'disconnected';
+        console.log("Flux WebSocket déconnecté. Tentative de reconnexions automatiques en tâche de fond...");
+        // Stratégie de reconnexion automatique après 5 secondes si défaillance réseau
+        setTimeout(() => this.initWebSocket(), 5000);
+      };
+    },
     async register() {
       try {
         this.message = "";
