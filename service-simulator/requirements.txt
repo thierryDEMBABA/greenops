@@ -1,3 +1,5 @@
 fastapi>=0.100.0
 uvicorn>=0.22.0
 prometheus_client>=0.17.0
+aio_pika
+psycopg2-binary
